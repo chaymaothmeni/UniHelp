@@ -1,0 +1,40 @@
+<mat-toolbar color="primary" class="app-bar">
+  <button mat-icon-button [routerLink]="['/dashboard']">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <img src="assets/unihelp_logo.png" alt="UniHelp Logo" class="app-bar-logo">
+</mat-toolbar>
+
+<div class="help-container">
+  
+
+  <mat-card class="auth-card mat-elevation-z4">
+    <mat-card-header>
+      <mat-card-title>Créer une demande</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form #form="ngForm" (ngSubmit)="onSubmit(form)">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Sujet</mat-label>
+          <input matInput [(ngModel)]="subject" name="subject" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Thème</mat-label>
+          <input matInput [(ngModel)]="topic" name="topic" required>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput [(ngModel)]="description" name="description" rows="5" required></textarea>
+        </mat-form-field>
+
+
+        <button mat-raised-button color="primary" type="submit" 
+                [disabled]="isLoading || form.invalid" class="submit-btn">
+          Créer
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

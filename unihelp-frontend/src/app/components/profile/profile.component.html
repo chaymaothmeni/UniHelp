@@ -1,0 +1,206 @@
+<div class="profile-container">
+
+  
+  <div class="profile-header">
+    <img src="assets/unihelp_logo.png" alt="UniHelp Logo" class="unihelp-logo-header">
+    <h1>Mon Profil</h1>
+  </div>
+
+  <div class="profile-content-grid">
+
+    
+    <div class="profile-main-column">
+
+      
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>Informations personnelles</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="user-info">
+          <p *ngIf="user">
+            <strong>Nom d'utilisateur :</strong> {{ user.username }}<br>
+            <strong>Email :</strong> {{ user.email }}<br>
+           
+          </p>
+          <p *ngIf="!user && !loadError" class="loading-text">
+            <mat-spinner diameter="24"></mat-spinner>
+            Chargement...
+          </p>
+          <p *ngIf="loadError" class="error-text">
+            Impossible de charger les informations. Veuillez réessayer.
+          </p>
+        </mat-card-content>
+      </mat-card>
+
+      
+      <mat-card class="profile-update-card unihelp-card">
+        <mat-card-header class="card-header-with-logo">
+          <mat-card-title>Paramètres du compte</mat-card-title>
+          <mat-card-subtitle>Modifier votre profil et votre sécurité</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+
+          
+          <div class="form-section">
+            <div class="form-title">
+              <mat-icon color="primary">person</mat-icon>
+              Modifier les informations
+            </div>
+
+            <form #profileForm="ngForm" (ngSubmit)="updateProfile(profileForm)">
+              <div class="form-grid">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Nom d'utilisateur</mat-label>
+                  <input 
+                    matInput 
+                    [(ngModel)]="updatedUser.username" 
+                    name="username" 
+                    required 
+                    minlength="3"
+                    #usernameCtrl="ngModel">
+                  <mat-icon matSuffix>alternate_email</mat-icon>
+                  <mat-error *ngIf="usernameCtrl.hasError('required')">Obligatoire</mat-error>
+                  <mat-error *ngIf="usernameCtrl.hasError('minlength')">Min. 3 caractères</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Adresse email</mat-label>
+                  <input 
+                    matInput 
+                    [(ngModel)]="updatedUser.email" 
+                    name="email" 
+                    type="email"
+                    required
+                    email
+                    #emailCtrl="ngModel">
+                  <mat-icon matSuffix>email</mat-icon>
+                  <mat-error *ngIf="emailCtrl.hasError('required')">Obligatoire</mat-error>
+                  <mat-error *ngIf="emailCtrl.hasError('email')">Email invalide</mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-actions">
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  class="save-btn" 
+                  type="submit"
+                  [disabled]="!profileForm.valid || profileForm.pristine || isUpdatingProfile">
+                  <mat-spinner *ngIf="isUpdatingProfile" diameter="20"></mat-spinner>
+                  {{ isUpdatingProfile ? 'Enregistrement...' : 'Enregistrer' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="section-divider">
+            <div class="line"></div>
+            <span class="or-text">sécurité</span>
+            <div class="line"></div>
+          </div>
+
+          
+          <div class="form-section password-section">
+            <div class="form-title">
+              <mat-icon color="warn">shield</mat-icon>
+              Changer le mot de passe
+            </div>
+
+            <form #passwordForm="ngForm" (ngSubmit)="updatePassword(passwordForm)">
+              <div class="form-grid">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Ancien mot de passe</mat-label>
+                  <input 
+                    matInput 
+                    [(ngModel)]="oldPassword" 
+                    name="oldPassword" 
+                    type="password" 
+                    required
+                    minlength="6"
+                    #oldPwdCtrl="ngModel">
+                  <mat-error *ngIf="oldPwdCtrl.hasError('required')">Obligatoire</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Nouveau mot de passe</mat-label>
+                  <input 
+                    matInput 
+                    [(ngModel)]="newPassword" 
+                    name="newPassword" 
+                    type="password" 
+                    required
+                    minlength="8"
+                    #newPwdCtrl="ngModel">
+                  <mat-hint align="end">Min. 8 caractères</mat-hint>
+                  <mat-error *ngIf="newPwdCtrl.hasError('required')">Obligatoire</mat-error>
+                  <mat-error *ngIf="newPwdCtrl.hasError('minlength')">Min. 8 caractères</mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-actions">
+                <button 
+                  mat-raised-button 
+                  color="warn" 
+                  class="update-pwd-btn" 
+                  type="submit"
+                  [disabled]="!passwordForm.valid || passwordForm.pristine || isUpdatingPassword">
+                  <mat-spinner *ngIf="isUpdatingPassword" diameter="20"></mat-spinner>
+                  {{ isUpdatingPassword ? 'Mise à jour...' : 'Modifier mot de passe' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+   
+    <div class="requests-column">
+      <mat-card class="requests-card">
+        <mat-card-header>
+          <mat-card-title>Mes demandes d'aide</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+
+          <mat-table 
+            [dataSource]="myRequests" 
+            *ngIf="myRequests.length > 0; else noRequestsTemplate">
+
+            <ng-container matColumnDef="subject">
+              <mat-header-cell *matHeaderCellDef>Matière</mat-header-cell>
+              <mat-cell *matCellDef="let req">{{ req.subject }}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="topic">
+              <mat-header-cell *matHeaderCellDef>Sujet</mat-header-cell>
+              <mat-cell *matCellDef="let req">{{ req.topic }}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <mat-header-cell *matHeaderCellDef>Statut</mat-header-cell>
+              <mat-cell *matCellDef="let req">
+                <span class="status-chip" [ngClass]="req.status | lowercase">
+                  {{ req.status }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+          </mat-table>
+
+          <ng-template #noRequestsTemplate>
+            <div class="no-requests">
+              <mat-icon>hourglass_empty</mat-icon>
+              <p>Aucune demande créée pour le moment.</p>
+            </div>
+          </ng-template>
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+</div>

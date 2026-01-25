@@ -1,0 +1,41 @@
+<div class="help-container">
+  <div class="header-section">
+    <img src="assets/unihelp_logo.png" alt="UniHelp Logo" class="help-logo">
+    <h2>Demandes d'aide récentes</h2>
+
+    
+    <button mat-icon-button color="primary" [routerLink]="['/profile']" class="profile-btn" matTooltip="Mon profil">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+
+    <button mat-raised-button color="primary" [routerLink]="['/new-request']" class="new-request-btn">
+      + Nouvelle demande
+    </button>
+  </div>
+
+  
+  <mat-form-field appearance="outline" class="full-width search-field">
+    <mat-label>Rechercher par matière</mat-label>
+    <input matInput [(ngModel)]="searchTerm" (ngModelChange)="filterRequests()">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <div class="requests-grid" *ngIf="filteredRequests.length > 0; else noRequests">
+    <mat-card class="request-card" *ngFor="let req of filteredRequests">
+      <mat-card-header>
+        <mat-card-title>{{ req.subject }} - {{ req.topic }}</mat-card-title>
+        <mat-card-subtitle>Statut : {{ req.status || 'OUVERT' }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ req.description | slice:0:150 }}...</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="viewDetail(req.id!)">Voir détails</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <ng-template #noRequests>
+    <p class="no-requests-text">Aucune demande pour le moment.</p>
+  </ng-template>
+</div>

@@ -1,0 +1,210 @@
+/* ==========================================================================
+   UniHelp - Page Profil - Version centrée verticale (améliorée)
+   ========================================================================== */
+
+.profile-container {
+  padding: 32px 20px;
+  max-width: 640px;
+  margin: 0 auto;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+}
+
+/* En-tête */
+.profile-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(33, 150, 243, 0.12);
+}
+
+.unihelp-logo-header {
+  height: 80px;
+  width: auto;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 6px 14px rgba(33, 150, 243, 0.20));
+  transition: transform 0.35s ease;
+}
+
+.unihelp-logo-header:hover {
+  transform: scale(1.05);
+}
+
+.profile-header h1 {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #0d47a1;
+  letter-spacing: -0.4px;
+}
+
+/* Carte principale (update profil + mot de passe) */
+.profile-update-card.unihelp-card {
+  border-radius: 20px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 
+    0 10px 38px rgba(0, 0, 0, 0.09),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(33, 150, 243, 0.10);
+  transition: all 0.32s ease;
+  margin: 0 auto 32px auto;
+}
+
+.profile-update-card.unihelp-card:hover {
+  box-shadow: 
+    0 16px 52px rgba(0, 0, 0, 0.13),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+}
+
+/* Header de la carte paramètres */
+.card-header-with-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 28px 20px;
+  background: linear-gradient(135deg, #f8fbff 0%, #edf6ff 100%);
+  border-bottom: 1px solid rgba(33, 150, 243, 0.14);
+  text-align: center;
+}
+
+mat-card-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0d47a1;
+  margin: 0 0 8px 0;
+}
+
+mat-card-subtitle {
+  color: #607d8b;
+  font-size: 1.02rem;
+  font-weight: 400;
+}
+
+/* Sections formulaire */
+.form-section {
+  padding: 28px 32px;
+}
+
+.form-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.28rem;
+  font-weight: 600;
+  color: #1a237e;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid rgba(63, 81, 181, 0.13);
+}
+
+.form-grid {
+  display: grid;
+  gap: 22px;
+}
+
+.form-actions {
+  margin-top: 28px;
+  text-align: center;
+}
+
+/* Boutons */
+.save-btn {
+  background: linear-gradient(90deg, #1976d2, #2196f3) !important;
+  color: white !important;
+  padding: 0 40px !important;
+  height: 50px !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: none;
+  min-width: 260px;
+  transition: all 0.28s ease;
+  box-shadow: 0 4px 14px rgba(33, 150, 243, 0.28);
+}
+
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.38) !important;
+}
+
+.update-pwd-btn {
+  background: linear-gradient(90deg, #d32f2f, #f44336) !important;
+  color: white !important;
+  padding: 0 40px !important;
+  height: 50px !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: none;
+  min-width: 260px;
+  transition: all 0.28s ease;
+  box-shadow: 0 4px 14px rgba(244, 67, 54, 0.28);
+}
+.info-card {
+  margin-bottom: 32px;   
+}
+
+.update-pwd-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(244, 67, 54, 0.38) !important;
+}
+
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 32px;
+  color: #90a4ae;
+}
+
+.section-divider .line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #cfd8dc 50%, transparent);
+}
+
+.section-divider .or-text {
+  padding: 0 28px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+}
+
+
+@media (max-width: 640px) {
+  .profile-container {
+    padding: 24px 16px;
+  }
+
+  .unihelp-logo-header {
+    height: 64px;
+  }
+
+  .profile-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .card-header-with-logo {
+    padding: 32px 20px 16px;
+  }
+
+  mat-card-title {
+    font-size: 1.65rem;
+  }
+
+  .form-section {
+    padding: 24px 20px;
+  }
+
+  .save-btn,
+  .update-pwd-btn {
+    min-width: 100%;
+    padding: 0 24px !important;
+  }
+
+  .section-divider .or-text {
+    padding: 0 20px;
+  }
+}

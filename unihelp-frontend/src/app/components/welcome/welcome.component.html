@@ -1,0 +1,40 @@
+<div class="welcome-container">
+  <div class="welcome-hero">
+    <img
+      src="assets/unihelp_logo.png"
+      alt="UniHelp Logo"
+      class="welcome-logo"
+    />
+    <h1 class="welcome-title">Bienvenue sur UniHelp </h1>
+    <p class="welcome-description">
+      UniHelp est une plateforme collaborative qui permet aux étudiants de publier des demandes d'aide,
+      de répondre aux questions des autres, et de réussir ensemble leurs études grâce à une communauté active.
+    </p>
+
+    <div class="welcome-features">
+      <div class="feature">
+        <mat-icon>help_outline</mat-icon>
+        <span>Demander de l'aide</span>
+      </div>
+      <div class="feature">
+        <mat-icon>group</mat-icon>
+        <span>Collaborer</span>
+      </div>
+      <div class="feature">
+        <mat-icon>star</mat-icon>
+        <span>Réussir ensemble</span>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button mat-raised-button color="primary" (click)="goToLogin()">
+        <mat-icon>login</mat-icon>
+        Sign In
+      </button>
+      <button mat-raised-button color="accent" (click)="goToRegister()">
+        <mat-icon>person_add</mat-icon>
+        Sign Up
+      </button>
+    </div>
+  </div>
+</div>

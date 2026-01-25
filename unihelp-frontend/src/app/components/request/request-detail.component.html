@@ -1,0 +1,39 @@
+<mat-toolbar color="primary" class="app-bar">
+  <button mat-icon-button [routerLink]="['/dashboard']">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <img src="assets/unihelp_logo.png" alt="UniHelp Logo" class="app-bar-logo">
+  <span class="app-bar-title">Détails de la demande</span>
+</mat-toolbar>
+
+
+
+<div class="help-container mat-elevation-z4">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ request.subject }} - {{ request.topic }}</mat-card-title>
+      <mat-card-subtitle>Statut : {{ request.status }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>{{ request.description }}</p>
+
+      <h3>Commentaires</h3>
+      <div *ngFor="let c of comments">
+        <mat-card class="comment-card">
+          <mat-card-subtitle>{{ c.user?.email }} - {{ c.createdAt | date:'short' }}</mat-card-subtitle>
+          <p>{{ c.content }}</p>
+        </mat-card>
+      </div>
+
+      <form #form="ngForm" (ngSubmit)="submitComment(form)">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Ajouter un commentaire</mat-label>
+          <textarea matInput [(ngModel)]="newComment" name="content" rows="3" required></textarea>
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading || form.invalid">
+          Ajouter
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

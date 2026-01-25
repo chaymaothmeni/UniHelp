@@ -1,0 +1,116 @@
+/* 
+   Thème inspiré de Azure-blue (Material 3)
+   Primary → azure-palette (teinte principale autour de #006a6f / cyan-bleuté)
+   Tertiary/Accent → blue-palette ou light-blue (plus vif, ~ #0091ea)
+   Appliqué via :root pour qu'il soit global
+*/
+
+:root {
+  /* === Couleurs principales du système M3 === */
+  --mat-sys-primary: #006a6f;               /* ~ azure 700 */
+  --mat-sys-primary-container: #9cf0f5;     /* ~ azure 100/200 */
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-on-primary-container: #001f21;
+
+  --mat-sys-secondary: #4a6364;             /* gris-bleuté neutre */
+  --mat-sys-secondary-container: #cde7e8;
+  --mat-sys-on-secondary: #ffffff;
+  --mat-sys-on-secondary-container: #051f21;
+
+  /* Accent / Tertiary (ce que tu appelles souvent "accent") */
+  --mat-sys-tertiary: #0061a5;              /* ~ blue A200-ish */
+  --mat-sys-tertiary-container: #cfe5ff;
+  --mat-sys-on-tertiary: #ffffff;
+  --mat-sys-on-tertiary-container: #001c38;
+
+  /* Neutres */
+  --mat-sys-background: #f6fbfb;
+  --mat-sys-on-background: #181c1c;
+  --mat-sys-surface: #f6fbfb;
+  --mat-sys-on-surface: #181c1c;
+  --mat-sys-surface-variant: #dbe5e5;
+  --mat-sys-on-surface-variant: #41494a;
+
+  /* Error / Warn */
+  --mat-sys-error: #ba1a1a;
+  --mat-sys-on-error: #ffffff;
+  --mat-sys-error-container: #ffdad6;
+  --mat-sys-on-error-container: #410002;
+
+  /* Autres couleurs souvent utilisées */
+  --mat-sys-outline: #72797a;
+  --mat-sys-inverse-on-surface: #eef2f2;
+  --mat-sys-inverse-surface: #2d3131;
+  --mat-sys-shadow: #000000;
+  --mat-sys-surface-tint: #006a6f;
+
+  /* === Variables pour les composants (exemples) === */
+  --mat-primary: var(--mat-sys-primary);
+  --mat-primary-container: var(--mat-sys-primary-container);
+  --mat-accent: var(--mat-sys-tertiary);            /* accent souvent = tertiary */
+  --mat-warn: var(--mat-sys-error);
+
+  /* Boutons filled / elevated */
+  --mdc-filled-button-container-color: var(--mat-sys-primary);
+  --mdc-filled-button-label-text-color: var(--mat-sys-on-primary);
+
+  /* Boutons outlined */
+  --mdc-outlined-button-outline-color: var(--mat-sys-outline);
+  --mdc-outlined-button-label-text-color: var(--mat-sys-primary);
+
+  /* Chips, cards, etc. */
+  --mat-sys-surface-container-highest: #e0e8e8;
+  --mat-sys-surface-container-high: #e5eded;
+}
+
+/* Si tu veux accentuer un peu plus l'accent comme dans ton code SCSS */
+:root {
+  --mat-sys-tertiary: #0086f4;          /* plus proche de light-blue A200 */
+  --mat-sys-tertiary-container: #d0e4ff;
+  --mat-sys-on-tertiary-container: #001d3d;
+}
+
+/* Appliquer le fond général */
+body {
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Exemple : bouton qui ressemble à un mat-flat-button */
+button,
+.btn-primary {
+  background: var(--mat-sys-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;   /* M3 shape */
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: none;
+}
+
+button:hover {
+  background: color-mix(in srgb, var(--mat-sys-primary) 90%, black);
+}
+
+/* Bouton accentué */
+.btn-accent {
+  background: var(--mat-sys-tertiary);
+  color: white;
+}
+
+.btn-accent:hover {
+  background: color-mix(in srgb, var(--mat-sys-tertiary) 90%, black);
+}
+
+/* Exemple App Bar / Top bar */
+header, .mat-mdc-top-app-bar {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}

@@ -1,0 +1,95 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="logo-section">
+      <img src="assets/unihelp_logo.png" alt="UniHelp Logo" class="register-logo">
+      <h2 class="register-title">Inscription à UniHelp</h2>
+      <p class="register-subtitle">Créez votre compte étudiant</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="register-form">
+
+      
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Nom d'utilisateur</mat-label>
+        <input
+          matInput
+          [(ngModel)]="username"
+          name="username"
+          required
+          minlength="3"
+          #usernameCtrl="ngModel">
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-error *ngIf="usernameCtrl.hasError('required')">
+          Le nom d'utilisateur est requis
+        </mat-error>
+        <mat-error *ngIf="usernameCtrl.hasError('minlength')">
+          Minimum 3 caractères
+        </mat-error>
+      </mat-form-field>
+
+     
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Adresse email</mat-label>
+        <input
+          matInput
+          [(ngModel)]="email"
+          name="email"
+          type="email"
+          required
+          email
+          #emailCtrl="ngModel">
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="emailCtrl.hasError('required')">
+          L'email est requis
+        </mat-error>
+        <mat-error *ngIf="emailCtrl.hasError('email')">
+          Format d'email invalide
+        </mat-error>
+      </mat-form-field>
+
+      
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          [(ngModel)]="password"
+          name="password"
+          required
+          minlength="6"
+          #passwordCtrl="ngModel">
+        <mat-icon matSuffix (click)="togglePasswordVisibility()">
+          {{ hidePassword ? 'visibility_off' : 'visibility' }}
+        </mat-icon>
+        <mat-error *ngIf="passwordCtrl.hasError('required')">
+          Le mot de passe est requis
+        </mat-error>
+        <mat-error *ngIf="passwordCtrl.hasError('minlength')">
+          Minimum 6 caractères
+        </mat-error>
+      </mat-form-field>
+
+      
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="register-button"
+        [disabled]="registerForm.invalid || isLoading">
+        <span *ngIf="!isLoading">
+          <mat-icon>person_add</mat-icon>
+          S'inscrire
+        </span>
+        <mat-spinner diameter="24" *ngIf="isLoading"></mat-spinner>
+      </button>
+
+    </form>
+
+    <div class="footer-section">
+      <p class="footer-text">
+        Déjà un compte ?
+        <a routerLink="/login" class="login-link">Se connecter</a>
+      </p>
+    </div>
+  </div>
+</div>

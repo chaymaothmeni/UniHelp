@@ -1,0 +1,23 @@
+[req]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+prompt             = no
+
+[req_distinguished_name]
+countryName            = TN
+stateOrProvinceName    = Tunis
+localityName           = Tunis
+organizationName       = Unihelp Test
+commonName             = unihelp.local
+
+[req_ext]
+subjectAltName         = @alt_names
+
+[alt_names]
+DNS.1                  = unihelp.local
+DNS.2                  = localhost
+DNS.3                  = 127.0.0.1
+# Ajoute ici d'autres noms si besoin, ex:
+# DNS.4                = unihelp
+# IP.1                 = 192.168.1.25
