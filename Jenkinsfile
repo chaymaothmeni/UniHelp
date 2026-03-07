@@ -1,56 +1,75 @@
 pipeline {
-    agent any  // Exécute sur ton agent Jenkins (ta VM Ubuntu)
+    agent any
 
-    tools {
-        maven 'Maven'          // Le nom que tu as configuré dans Jenkins Tools (si pas, on ajuste)
-        jdk 'JDK17'            // Si tu as configuré JDK 17 dans Jenkins Global Tools
-        nodejs 'Node24'        // Si tu as configuré NodeJS dans Jenkins (sinon on installe via sh)
+    environment {
+        BACKEND_DIR = 'unihelp-backend'
+        FRONTEND_DIR = 'unihelp-frontend'
     }
 
     stages {
+
         stage('Cloner le code') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'github-token-for-jenkins',  // Le nom exact de ton credential !
+                    credentialsId: 'github-token-for-jenkins',
                     url: 'https://github.com/chaymaothmeni/UniHelp.git'
+            }
+        }
+
+        stage('Vérifier les versions') {
+            steps {
+                sh 'java -version'
+                sh 'mvn -version'
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
 
         stage('Build Backend (Spring Boot)') {
             steps {
-                dir('unihelp-backend') {  // Va dans le dossier backend
-                    sh 'mvn clean install -DskipTests'  // Build sans tests pour commencer
+                dir("${BACKEND_DIR}") {
+                    sh 'mvn clean install -DskipTests'
                 }
             }
         }
 
         stage('Build Frontend (Angular)') {
             steps {
-                dir('unihelp-frontend') {  // Va dans le dossier frontend
-                    sh 'npm install'                // Installe les dépendances
-                    sh 'ng build --configuration production'  // Build pour prod
+                dir("${FRONTEND_DIR}") {
+                    sh 'npm install'
+                    sh 'npm install -g @angular/cli'
+                    sh 'ng build --configuration production'
                 }
             }
         }
 
-        // Optionnel : Ajoute une étape pour voir les fichiers buildés
         stage('Vérifier les builds') {
             steps {
-                sh 'ls -la unihelp-backend/target/'     // Doit montrer le JAR
-                sh 'ls -la unihelp-frontend/dist/'      // Doit montrer les fichiers Angular buildés
+                sh 'echo "Backend build :"'
+                sh 'ls -la unihelp-backend/target/'
+
+                sh 'echo "Frontend build :"'
+                sh 'ls -la unihelp-frontend/dist/'
+            }
+        }
+
+        stage('Archive des artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'unihelp-backend/target/*.jar', fingerprint: true
+                archiveArtifacts artifacts: 'unihelp-frontend/dist/**', fingerprint: true
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline terminé !'
+            echo 'Pipeline terminé'
         }
         success {
-            echo 'Tout est OK 🎉'
+            echo 'Build réussi 🎉'
         }
         failure {
-            echo 'Il y a eu une erreur 😔'
+            echo 'Build échoué ❌'
         }
     }
 }
