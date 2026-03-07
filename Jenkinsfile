@@ -4,6 +4,13 @@ pipeline {
     environment {
         BACKEND_DIR = 'unihelp-backend'
         FRONTEND_DIR = 'unihelp-frontend'
+        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk-amd64'
+        PATH = "/usr/bin:$PATH"  // assure que node et npm sont trouvés
+    }
+
+    tools {
+        maven 'Maven'   // le nom que tu as configuré dans Jenkins Tools
+        jdk 'JDK21'     // le JDK21 configuré dans Jenkins Tools
     }
 
     stages {
@@ -36,27 +43,28 @@ pipeline {
         stage('Build Frontend (Angular)') {
             steps {
                 dir("${FRONTEND_DIR}") {
+                    // Installer les dépendances dans le projet
                     sh 'npm install'
-                    sh 'npm install -g @angular/cli'
-                    sh 'ng build --configuration production'
+                    // Utiliser Angular CLI local avec npx
+                    sh 'npx ng build --configuration production'
                 }
             }
         }
 
         stage('Vérifier les builds') {
             steps {
-                sh 'echo "Backend build :"'
-                sh 'ls -la unihelp-backend/target/'
+                echo "Backend build :"
+                sh "ls -la ${BACKEND_DIR}/target/"
 
-                sh 'echo "Frontend build :"'
-                sh 'ls -la unihelp-frontend/dist/'
+                echo "Frontend build :"
+                sh "ls -la ${FRONTEND_DIR}/dist/"
             }
         }
 
         stage('Archive des artifacts') {
             steps {
-                archiveArtifacts artifacts: 'unihelp-backend/target/*.jar', fingerprint: true
-                archiveArtifacts artifacts: 'unihelp-frontend/dist/**', fingerprint: true
+                archiveArtifacts artifacts: "${BACKEND_DIR}/target/*.jar", fingerprint: true
+                archiveArtifacts artifacts: "${FRONTEND_DIR}/dist/**", fingerprint: true
             }
         }
     }
