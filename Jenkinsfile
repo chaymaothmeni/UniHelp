@@ -9,8 +9,8 @@ pipeline {
     }
 
     tools {
-        maven 'Maven'   // le nom que tu as configuré dans Jenkins Tools
-        jdk 'JDK21'     // le JDK21 configuré dans Jenkins Tools
+        maven '$_MAVEN'   // le nom que tu as configuré dans Jenkins Tools
+        jdk '$_HOME'     // le JDK21 configuré dans Jenkins Tools
     }
 
     stages {
