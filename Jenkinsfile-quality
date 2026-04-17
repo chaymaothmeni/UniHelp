@@ -33,10 +33,7 @@ pipeline {
         stage('Compiler Frontend') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    sh '''
-                        npm install
-                        npx ng build --configuration production
-                    '''
+                    sh 'npm install'
                 }
             }
         }
@@ -47,8 +44,8 @@ pipeline {
                     dir("${BACKEND_DIR}") {
                         sh '''
                             mvn sonar:sonar \
-                                -Dsonar.projectKey=unihelp-backend \
-                                -Dsonar.projectName="UniHelp Backend" \
+                                -Dsonar.projectKey=Unihelp \
+                                -Dsonar.projectName="Unihelp" \
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN}
                         '''
@@ -63,12 +60,11 @@ pipeline {
                     dir("${FRONTEND_DIR}") {
                         sh '''
                             npx sonar-scanner \
-                                -Dsonar.projectKey=unihelp-frontend \
-                                -Dsonar.projectName="UniHelp Frontend" \
+                                -Dsonar.projectKey=Unihelp \
+                                -Dsonar.projectName="Unihelp" \
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.sources=src \
-                                -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts
+                                -Dsonar.sources=src
                         '''
                     }
                 }
@@ -96,7 +92,7 @@ pipeline {
             echo '🎉 Qualité du code validée !'
         }
         failure {
-            echo '❌ Qualité du code non conforme - Consultez SonarQube'
+            echo '❌ Qualité du code non conforme'
         }
     }
 }
