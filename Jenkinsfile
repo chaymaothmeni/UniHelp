@@ -45,7 +45,6 @@ pipeline {
                         sh '''
                             mvn sonar:sonar \
                                 -Dsonar.projectKey=Unihelp \
-                                -Dsonar.projectName="Unihelp" \
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN}
                         '''
@@ -61,7 +60,6 @@ pipeline {
                         sh '''
                             npx sonar-scanner \
                                 -Dsonar.projectKey=Unihelp \
-                                -Dsonar.projectName="Unihelp" \
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN} \
                                 -Dsonar.sources=src
