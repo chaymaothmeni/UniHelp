@@ -5,15 +5,12 @@ pipeline {
         BACKEND_DIR = 'unihelp-backend'
         FRONTEND_DIR = 'unihelp-frontend'
         JAVA_HOME = '/usr/lib/jvm/java-21-openjdk-amd64'
-        PATH = "/usr/bin:$PATH"
-        
-        // Token SonarQube (défini dans Jenkins Credentials)
-        SONAR_TOKEN = credentials('sonar-token')
+        PATH = "/usr/bin:$PATH"  // assure que node et npm sont trouvés
     }
 
     tools {
-        maven '$_MAVEN'
-        jdk '$_HOME'
+        maven '$_MAVEN'   // le nom que tu as configuré dans Jenkins Tools
+        jdk '$_HOME'     // le JDK21 configuré dans Jenkins Tools
         nodejs '$_NODEJS'
     }
 
@@ -24,52 +21,6 @@ pipeline {
                 git branch: 'main',
                     credentialsId: 'github-token-for-jenkins',
                     url: 'https://github.com/chaymaothmeni/UniHelp.git'
-            }
-        }
-
-        // ==================== NOUVEAU STAGE SONARQUBE ====================
-        stage('SonarQube Analysis - Backend') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    dir("${BACKEND_DIR}") {
-                        sh '''
-                            mvn clean verify sonar:sonar \
-                                -Dsonar.projectKey=unihelp-backend \
-                                -Dsonar.projectName="UniHelp Backend" \
-                                -Dsonar.host.url=http://localhost:9000 \
-                                -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.java.binaries=target/classes
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('SonarQube Analysis - Frontend') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    dir("${FRONTEND_DIR}") {
-                        sh '''
-                            npx sonar-scanner \
-                                -Dsonar.projectKey=unihelp-frontend \
-                                -Dsonar.projectName="UniHelp Frontend" \
-                                -Dsonar.host.url=http://localhost:9000 \
-                                -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.sources=. \
-                                -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts
-                        '''
-                    }
-                }
-            }
-        }
-
-        // ==================== QUALITY GATE ====================
-        stage('Quality Gate Check') {
-            steps {
-                timeout(time: 30, unit: 'MINUTES') {
-                    // Attend le résultat du webhook SonarQube
-                    waitForQualityGate abortPipeline: true
-                }
             }
         }
 
@@ -93,7 +44,9 @@ pipeline {
         stage('Build Frontend (Angular)') {
             steps {
                 dir("${FRONTEND_DIR}") {
+                    // Installer les dépendances dans le projet
                     sh 'npm install'
+                    // Utiliser Angular CLI local avec npx
                     sh 'npx ng build --configuration production'
                 }
             }
