@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    environment {
+        BACKEND_DIR = 'unihelp-backend'
+        FRONTEND_DIR = 'unihelp-frontend'
+        SONAR_TOKEN = credentials('sonar-token')
+    }
+
+    tools {
+        maven '$_MAVEN'
+        jdk '$_HOME'
+        nodejs '$_NODEJS'
+    }
+
+    stages {
+        stage('Cloner le code') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-token-for-jenkins',
+                    url: 'https://github.com/chaymaothmeni/UniHelp.git'
+            }
+        }
+
+        stage('Analyse Backend') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir("${BACKEND_DIR}") {
+                        sh '''
+                            mvn clean sonar:sonar \
+                                -Dsonar.projectKey=unihelp-backend \
+                                -Dsonar.projectName="UniHelp Backend" \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONAR_TOKEN} \
+                                -Dsonar.java.binaries=target/classes \
+                                -DskipTests=true
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Analyse Frontend') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir("${FRONTEND_DIR}") {
+                        sh '''
+                            npx sonar-scanner \
+                                -Dsonar.projectKey=unihelp-frontend \
+                                -Dsonar.projectName="UniHelp Frontend" \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONAR_TOKEN} \
+                                -Dsonar.sources=. \
+                                -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Résultat') {
+            steps {
+                echo "✅ Analyse terminée"
+                echo "📊 Consultez les résultats: http://localhost:9000"
+                echo "📁 Projet Backend: unihelp-backend"
+                echo "📁 Projet Frontend: unihelp-frontend"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '🎉 Qualité du code validée !'
+        }
+        failure {
+            echo '❌ Qualité du code non conforme - Consultez SonarQube'
+        }
+    }
+}
