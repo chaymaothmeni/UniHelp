@@ -1,0 +1,229 @@
+pipeline {
+    agent any
+
+    environment {
+        BACKEND_DIR = 'unihelp-backend'
+        FRONTEND_DIR = 'unihelp-frontend'
+        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk-amd64'
+        PATH = "/usr/bin:$PATH"
+        SONAR_TOKEN = credentials('sonar-token')
+        
+        // Variables pour Nexus
+        NEXUS_URL = 'http://<IP_DE_VOTRE_VM>:8081'
+        NEXUS_MAVEN_REPO = 'maven-releases'
+        NEXUS_RAW_REPO = 'raw-releases'
+    }
+
+    tools {
+        maven '$_MAVEN'
+        jdk '$_HOME'
+        nodejs '$_NODEJS'
+    }
+
+    stages {
+
+        stage('Cloner le code') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-token-for-jenkins',
+                    url: 'https://github.com/chaymaothmeni/UniHelp.git'
+            }
+        }
+
+        stage('Vérifier les versions') {
+            steps {
+                sh 'java -version'
+                sh 'mvn -version'
+                sh 'node -v'
+                sh 'npm -v'
+            }
+        }
+
+        // ============ COMPILATION ============
+        stage('Compiler Backend') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    sh 'mvn clean compile -DskipTests'
+                }
+            }
+        }
+
+        stage('Compiler Frontend') {
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        // ============ ANALYSE QUALITÉ SONARQUBE ============
+        stage('Analyse Backend (SonarQube)') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir("${BACKEND_DIR}") {
+                        sh '''
+                            mvn sonar:sonar \
+                                -Dsonar.projectKey=Unihelp \
+                                -Dsonar.projectName="Unihelp" \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONAR_TOKEN}
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Analyse Frontend (SonarQube)') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir("${FRONTEND_DIR}") {
+                        sh '''
+                            npx sonar-scanner \
+                                -Dsonar.projectKey=Unihelp \
+                                -Dsonar.projectName="Unihelp" \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONAR_TOKEN} \
+                                -Dsonar.sources=src \
+                                -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        // ============ BUILD COMPLET ============
+        stage('Build Backend (Spring Boot)') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    sh 'mvn clean install -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Frontend (Angular)') {
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    sh 'npm install'
+                    sh 'npx ng build --configuration production'
+                }
+            }
+        }
+
+        // ============ PUBLICATION VERS NEXUS ============
+        stage('Publish Backend to Nexus (Maven)') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    script {
+                        // Lire les informations depuis le pom.xml
+                        def pom = readMavenPom file: 'pom.xml'
+                        
+                        // Générer le nom du fichier JAR
+                        def jarFile = "target/${pom.artifactId}-${pom.version}.jar"
+                        
+                        // Upload vers Nexus
+                        nexusArtifactUploader(
+                            nexusVersion: 'nexus3',
+                            protocol: 'http',
+                            nexusUrl: "${NEXUS_URL}",
+                            groupId: pom.groupId,
+                            version: pom.version,
+                            repository: "${NEXUS_MAVEN_REPO}",
+                            credentialsId: 'nexus-maven-credentials',
+                            artifacts: [
+                                [
+                                    artifactId: pom.artifactId,
+                                    classifier: '',
+                                    file: jarFile,
+                                    type: 'jar'
+                                ]
+                            ]
+                        )
+                        echo "✅ JAR publié : ${pom.groupId}:${pom.artifactId}:${pom.version}"
+                    }
+                }
+            }
+        }
+
+        stage('Publish Frontend to Nexus (Raw)') {
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    script {
+                        // Lire la version depuis package.json
+                        def packageJson = readJSON file: 'package.json'
+                        def version = packageJson.version
+                        def appName = packageJson.name
+                        
+                        // Compresser le dossier dist
+                        sh """
+                            cd dist/unihelp-frontend
+                            zip -r ../${appName}-${version}.zip .
+                            cd ../..
+                        """
+                        
+                        // Upload vers Nexus (raw)
+                        nexusArtifactUploader(
+                            nexusVersion: 'nexus3',
+                            protocol: 'http',
+                            nexusUrl: "${NEXUS_URL}",
+                            repository: "${NEXUS_RAW_REPO}",
+                            credentialsId: 'nexus-raw-credentials',
+                            artifacts: [
+                                [
+                                    artifactId: appName,
+                                    file: "${appName}-${version}.zip",
+                                    type: 'zip'
+                                ]
+                            ]
+                        )
+                        echo "✅ Frontend ZIP publié : ${appName}-${version}.zip"
+                    }
+                }
+            }
+        }
+
+        stage('Vérifier les builds') {
+            steps {
+                echo "Backend build :"
+                sh "ls -la ${BACKEND_DIR}/target/"
+
+                echo "Frontend build :"
+                sh "ls -la ${FRONTEND_DIR}/dist/"
+            }
+        }
+
+        stage('Archive des artifacts') {
+            steps {
+                archiveArtifacts artifacts: "${BACKEND_DIR}/target/*.jar", fingerprint: true
+                archiveArtifacts artifacts: "${FRONTEND_DIR}/dist/**", fingerprint: true
+            }
+        }
+
+        stage('Résultat Final') {
+            steps {
+                echo "✅ Pipeline terminé avec succès"
+                echo "📊 Qualité du code: http://localhost:9000"
+                echo "📦 Nexus: http://${NEXUS_URL}"
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline terminé'
+        }
+        success {
+            echo '🎉 Build, qualité et publication validés !'
+        }
+        failure {
+            echo '❌ Build, qualité ou publication non conforme'
+        }
+    }
+}
