@@ -22,7 +22,6 @@ pipeline {
             }
         }
 
-        // ⚠️ NOUVEAU STAGE : Compilation backend (nécessaire pour SonarQube)
         stage('Compiler Backend') {
             steps {
                 dir("${BACKEND_DIR}") {
@@ -31,12 +30,13 @@ pipeline {
             }
         }
 
-        // ⚠️ NOUVEAU STAGE : Compilation frontend (nécessaire pour SonarQube)
         stage('Compiler Frontend') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    sh 'npm install'
-                    sh 'npm run build -- --prod'  // ou npx ng build
+                    sh '''
+                        npm install
+                        npx ng build --configuration production
+                    '''
                 }
             }
         }
@@ -50,8 +50,7 @@ pipeline {
                                 -Dsonar.projectKey=unihelp-backend \
                                 -Dsonar.projectName="UniHelp Backend" \
                                 -Dsonar.host.url=http://localhost:9000 \
-                                -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.java.binaries=target/classes
+                                -Dsonar.login=${SONAR_TOKEN}
                         '''
                     }
                 }
@@ -69,7 +68,7 @@ pipeline {
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN} \
                                 -Dsonar.sources=src \
-                                -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                                -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts
                         '''
                     }
                 }
