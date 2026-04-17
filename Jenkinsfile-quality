@@ -22,18 +22,36 @@ pipeline {
             }
         }
 
+        // ⚠️ NOUVEAU STAGE : Compilation backend (nécessaire pour SonarQube)
+        stage('Compiler Backend') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    sh 'mvn clean compile -DskipTests'
+                }
+            }
+        }
+
+        // ⚠️ NOUVEAU STAGE : Compilation frontend (nécessaire pour SonarQube)
+        stage('Compiler Frontend') {
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    sh 'npm install'
+                    sh 'npm run build -- --prod'  // ou npx ng build
+                }
+            }
+        }
+
         stage('Analyse Backend') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     dir("${BACKEND_DIR}") {
                         sh '''
-                            mvn clean sonar:sonar \
+                            mvn sonar:sonar \
                                 -Dsonar.projectKey=unihelp-backend \
                                 -Dsonar.projectName="UniHelp Backend" \
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.java.binaries=target/classes \
-                                -DskipTests=true
+                                -Dsonar.java.binaries=target/classes
                         '''
                     }
                 }
@@ -50,7 +68,7 @@ pipeline {
                                 -Dsonar.projectName="UniHelp Frontend" \
                                 -Dsonar.host.url=http://localhost:9000 \
                                 -Dsonar.login=${SONAR_TOKEN} \
-                                -Dsonar.sources=. \
+                                -Dsonar.sources=src \
                                 -Dsonar.exclusions=**/node_modules/**,**/dist/**
                         '''
                     }
@@ -69,9 +87,7 @@ pipeline {
         stage('Résultat') {
             steps {
                 echo "✅ Analyse terminée"
-                echo "📊 Consultez les résultats: http://localhost:9000"
-                echo "📁 Projet Backend: unihelp-backend"
-                echo "📁 Projet Frontend: unihelp-frontend"
+                echo "📊 Résultats: http://localhost:9000"
             }
         }
     }
