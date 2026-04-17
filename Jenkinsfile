@@ -4,18 +4,16 @@ pipeline {
     environment {
         BACKEND_DIR = 'unihelp-backend'
         FRONTEND_DIR = 'unihelp-frontend'
-        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk-amd64'
-        PATH = "/usr/bin:$PATH"  // assure que node et npm sont trouvés
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     tools {
-        maven '$_MAVEN'   // le nom que tu as configuré dans Jenkins Tools
-        jdk '$_HOME'     // le JDK21 configuré dans Jenkins Tools
+        maven '$_MAVEN'
+        jdk '$_HOME'
         nodejs '$_NODEJS'
     }
 
     stages {
-
         stage('Cloner le code') {
             steps {
                 git branch: 'main',
@@ -24,61 +22,77 @@ pipeline {
             }
         }
 
-        stage('Vérifier les versions') {
-            steps {
-                sh 'java -version'
-                sh 'mvn -version'
-                sh 'node -v'
-                sh 'npm -v'
-            }
-        }
-
-        stage('Build Backend (Spring Boot)') {
+        stage('Compiler Backend') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    sh 'mvn clean install -DskipTests'
+                    sh 'mvn clean compile -DskipTests'
                 }
             }
         }
 
-        stage('Build Frontend (Angular)') {
+        stage('Compiler Frontend') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    // Installer les dépendances dans le projet
                     sh 'npm install'
-                    // Utiliser Angular CLI local avec npx
-                    sh 'npx ng build --configuration production'
                 }
             }
         }
 
-        stage('Vérifier les builds') {
+        stage('Analyse Backend') {
             steps {
-                echo "Backend build :"
-                sh "ls -la ${BACKEND_DIR}/target/"
-
-                echo "Frontend build :"
-                sh "ls -la ${FRONTEND_DIR}/dist/"
+                withSonarQubeEnv('SonarQube') {
+                    dir("${BACKEND_DIR}") {
+                        sh '''
+                            mvn sonar:sonar \
+                                -Dsonar.projectKey=Unihelp \
+                                -Dsonar.projectName="Unihelp" \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONAR_TOKEN}
+                        '''
+                    }
+                }
             }
         }
 
-        stage('Archive des artifacts') {
+        stage('Analyse Frontend') {
             steps {
-                archiveArtifacts artifacts: "${BACKEND_DIR}/target/*.jar", fingerprint: true
-                archiveArtifacts artifacts: "${FRONTEND_DIR}/dist/**", fingerprint: true
+                withSonarQubeEnv('SonarQube') {
+                    dir("${FRONTEND_DIR}") {
+                        sh '''
+                            npx sonar-scanner \
+                                -Dsonar.projectKey=Unihelp \
+                                -Dsonar.projectName="Unihelp" \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONAR_TOKEN} \
+                                -Dsonar.sources=src
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Résultat') {
+            steps {
+                echo "✅ Analyse terminée"
+                echo "📊 Résultats: http://localhost:9000"
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline terminé'
-        }
         success {
-            echo 'Build réussi 🎉'
+            echo '🎉 Qualité du code validée !'
         }
         failure {
-            echo 'Build échoué ❌'
+            echo '❌ Qualité du code non conforme'
         }
     }
 }
