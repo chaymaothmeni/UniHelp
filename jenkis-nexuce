@@ -9,7 +9,7 @@ pipeline {
         SONAR_TOKEN = credentials('sonar-token')
         
         // Variables pour Nexus
-        NEXUS_URL = 'http://<IP_DE_VOTRE_VM>:8081'
+        NEXUS_URL = 'http://192.168.109.187:8081'
         NEXUS_MAVEN_REPO = 'maven-releases'
         NEXUS_RAW_REPO = 'raw-releases'
     }
