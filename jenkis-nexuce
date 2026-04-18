@@ -8,8 +8,8 @@ pipeline {
         PATH = "/usr/bin:$PATH"
         SONAR_TOKEN = credentials('sonar-token')
         
-        // Variables pour Nexus
-        NEXUS_URL = 'http://192.168.109.187:8081'
+        // Nexus - CORRECTION ICI
+        NEXUS_URL = '192.168.109.187:8081'   // ← sans http://
         NEXUS_MAVEN_REPO = 'maven-releases'
         NEXUS_RAW_REPO = 'raw-releases'
     }
@@ -39,7 +39,6 @@ pipeline {
             }
         }
 
-        // ============ COMPILATION ============
         stage('Compiler Backend') {
             steps {
                 dir("${BACKEND_DIR}") {
@@ -56,7 +55,6 @@ pipeline {
             }
         }
 
-        // ============ ANALYSE QUALITÉ SONARQUBE ============
         stage('Analyse Backend (SonarQube)') {
             steps {
                 withSonarQubeEnv('SonarQube') {
@@ -99,7 +97,6 @@ pipeline {
             }
         }
 
-        // ============ BUILD COMPLET ============
         stage('Build Backend (Spring Boot)') {
             steps {
                 dir("${BACKEND_DIR}") {
@@ -117,18 +114,13 @@ pipeline {
             }
         }
 
-        // ============ PUBLICATION VERS NEXUS ============
         stage('Publish Backend to Nexus (Maven)') {
             steps {
                 dir("${BACKEND_DIR}") {
                     script {
-                        // Lire les informations depuis le pom.xml
                         def pom = readMavenPom file: 'pom.xml'
-                        
-                        // Générer le nom du fichier JAR
                         def jarFile = "target/${pom.artifactId}-${pom.version}.jar"
                         
-                        // Upload vers Nexus
                         nexusArtifactUploader(
                             nexusVersion: 'nexus3',
                             protocol: 'http',
@@ -156,19 +148,16 @@ pipeline {
             steps {
                 dir("${FRONTEND_DIR}") {
                     script {
-                        // Lire la version depuis package.json
                         def packageJson = readJSON file: 'package.json'
                         def version = packageJson.version
                         def appName = packageJson.name
                         
-                        // Compresser le dossier dist
                         sh """
                             cd dist/unihelp-frontend
                             zip -r ../${appName}-${version}.zip .
                             cd ../..
                         """
                         
-                        // Upload vers Nexus (raw)
                         nexusArtifactUploader(
                             nexusVersion: 'nexus3',
                             protocol: 'http',
